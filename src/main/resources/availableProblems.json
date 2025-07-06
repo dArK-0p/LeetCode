@@ -1,0 +1,27 @@
+{
+  "7": {
+    "title": "Reverse Integer",
+    "descriptionFile": "DES7.txt",
+    "testcaseFile": "TC7.json"
+  },
+  "268": {
+    "title": "Missing Number",
+    "descriptionFile": "DES268.txt",
+    "testcaseFile": "TC268.json"
+  },
+  "1688": {
+    "title": "Count of Matches in Tournament",
+    "descriptionFile": "DES1688.txt",
+    "testcaseFile": "TC1688.json"
+  },
+  "2016": {
+    "title": "Maximum Difference Between Increasing Elements",
+    "descriptionFile": "DES2016.txt",
+    "testcaseFile": "TC2016.json"
+  },
+  "3409": {
+    "title": "Longest Subsequence With Decreasing Adjacent Difference",
+    "descriptionFile": "DES3409.txt",
+    "testcaseFile": "TC3409.json"
+  }
+}
