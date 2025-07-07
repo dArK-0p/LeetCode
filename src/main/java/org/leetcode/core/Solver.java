@@ -1,4 +1,4 @@
-package org.leetcode;
+package org.leetcode.core;
 
 /**
  * Functional interface representing a generic solver for a computational problem.

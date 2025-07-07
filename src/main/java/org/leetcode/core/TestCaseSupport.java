@@ -1,4 +1,4 @@
-package org.leetcode;
+package org.leetcode.core;
 
 import java.util.Map;
 

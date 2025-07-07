@@ -1,4 +1,4 @@
-package org.leetcode;
+package org.leetcode.solutions;
 @SuppressWarnings("unused")
 public class LC2016 {
 }

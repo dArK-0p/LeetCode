@@ -1,7 +1,9 @@
-package org.leetcode;
+package org.leetcode.solutions;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.leetcode.core.Problem;
+import org.leetcode.core.TestCases;
 
 import java.util.*;
 

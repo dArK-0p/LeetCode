@@ -1,4 +1,4 @@
-package org.leetcode;
+package org.leetcode.core;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;

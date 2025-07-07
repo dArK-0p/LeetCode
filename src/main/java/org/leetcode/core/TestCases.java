@@ -1,4 +1,4 @@
-package org.leetcode;
+package org.leetcode.core;
 
 import java.util.Map;
 
@@ -6,7 +6,7 @@ import java.util.Map;
  * Utility class responsible for holding and loading test cases (visible and hidden)
  * for a specific LeetCode problem. This class must be initialized per problem instance.
  */
-final class TestCases {
+public final class TestCases {
 
     /** Public static maps storing visible and hidden test cases. */
     public static Map<String, String> visible;

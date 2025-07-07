@@ -1,5 +1,8 @@
 package org.leetcode;
 
+import org.leetcode.core.Problem;
+import org.leetcode.solutions.LC268;
+
 import java.util.Scanner;
 
 /**

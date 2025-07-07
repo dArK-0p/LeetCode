@@ -1,4 +1,4 @@
-package org.leetcode;
+package org.leetcode.core;
 
 /**
  * Interface for handling interactive user input for a LeetCode problem.

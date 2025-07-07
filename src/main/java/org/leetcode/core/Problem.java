@@ -1,4 +1,4 @@
-package org.leetcode;
+package org.leetcode.core;
 
 /**
  * Primary interface to be implemented by all LeetCode problem classes.
