@@ -21,16 +21,22 @@ public interface Problem<I, O> extends
         UserInputSupport,
         MetadataSupport {
 
+    String PROBLEM_ID_LABEL = "Problem ID: ";
+    String TITLE_LABEL = "Title: ";
+    String LINK_LABEL = "Link: ";
+    String SEPARATOR_LINE = "---------------------------------";
+    String DESCRIPTION_LABEL = "Description:\n";
+    String DESCRIPTION_SUFFIX = "\n";
+
     /**
-     * Prints a complete summary of the problem including metadata and test cases.
+     * Prints a complete summary of the problem, including metadata and test cases.
      */
     default void printDetails() {
-        System.out.println("Problem ID: " + getId());
-        System.out.println("Title: " + getTitle());
-        System.out.println("Link: " + getLink());
-        System.out.println("---------------------------------");
-        System.out.println("Description:\n" + getDescription() + "\n");
-        printTestCases(true);   // Visible test cases
-        printTestCases(false);  // Hidden test cases
+        System.out.println(PROBLEM_ID_LABEL + getId());
+        System.out.println(TITLE_LABEL + getTitle());
+        System.out.println(LINK_LABEL + getLink());
+        System.out.println(SEPARATOR_LINE);
+        System.out.println(DESCRIPTION_LABEL + getDescription() + DESCRIPTION_SUFFIX);
+        printAllTestCases();
     }
 }

@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * Loads and provides access to metadata for LeetCode problems.
@@ -19,9 +20,17 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class ProblemMetadataLoader {
 
     /**
-     * Name of the metadata file in the resources directory.
+     * Name of the metadata file in the resources' directory.
      */
     private static final String METADATA_FILE = "availableProblems.json";
+
+    private static final String UNKNOWN_PROBLEM_TITLE = "Unknown Problem Title";
+    private static final String TESTCASES_PATH = "testcases/";
+    private static final String ERROR_PREFIX = "❌ ";
+    private static final String VISIBLE_SECTION = "visible";
+    private static final String HIDDEN_SECTION = "hidden";
+    private static final String INPUT_FIELD = "input";
+    private static final String OUTPUT_FIELD = "output";
 
     /**
      * Cache to store problem metadata after it's loaded from JSON.
@@ -43,11 +52,7 @@ public final class ProblemMetadataLoader {
      * @return the title string if found; otherwise a placeholder
      */
     static String getTitle(int id) {
-        Metadata metadata = cache.get(id);
-        if (metadata != null) {
-            return metadata.title;
-        }
-        return "Unknown Problem Title";
+        return getMetadataField(id, metadata -> metadata.title, UNKNOWN_PROBLEM_TITLE);
     }
 
     /**
@@ -57,11 +62,7 @@ public final class ProblemMetadataLoader {
      * @return the filename string (e.g., "DES268.txt") or null if not found
      */
     static String getDescriptionPath(int id) {
-        Metadata metadata = cache.get(id);
-        if (metadata != null) {
-            return metadata.descriptionFile;
-        }
-        return null;
+        return getMetadataField(id, metadata -> metadata.descriptionFile, null);
     }
 
     /**
@@ -71,11 +72,7 @@ public final class ProblemMetadataLoader {
      * @return the filename string (e.g., "TC268.json") or null if not found
      */
     static String getTestcasePath(int id) {
-        Metadata metadata = cache.get(id);
-        if (metadata != null) {
-            return metadata.testcaseFile;
-        }
-        return null;
+        return getMetadataField(id, metadata -> metadata.testcaseFile, null);
     }
 
     /**
@@ -90,35 +87,24 @@ public final class ProblemMetadataLoader {
         String filename = getTestcasePath(id);
         if (filename == null) return Map.of();
 
-        String path = "testcases/" + filename;
+        String path = TESTCASES_PATH + filename;
         try (InputStream is = ProblemMetadataLoader.class.getClassLoader().getResourceAsStream(path)) {
-            if (is == null) throw new IllegalStateException("❌ Testcase file not found: " + path);
+            if (is == null) throw new IllegalStateException(ERROR_PREFIX + "Testcase file not found: " + path);
 
             JsonObject root = JsonParser.parseReader(new InputStreamReader(is)).getAsJsonObject();
-            JsonArray array = root.getAsJsonArray(visible ? "visible" : "hidden");
+            JsonArray array = root.getAsJsonArray(visible ? VISIBLE_SECTION : HIDDEN_SECTION);
 
             Map<String, String> result = new LinkedHashMap<>();
             for (int i = 0; i < array.size(); i++) {
                 JsonObject obj = array.get(i).getAsJsonObject();
-                result.put(obj.get("input").toString(), obj.get("output").toString());
+                result.put(obj.get(INPUT_FIELD).toString(), obj.get(OUTPUT_FIELD).toString());
             }
 
             return result;
         } catch (Exception e) {
-            System.err.println("❌ Failed to load test cases: " + e.getMessage());
+            System.err.println(ERROR_PREFIX + "Failed to load test cases: " + e.getMessage());
             return Map.of();
         }
-    }
-
-
-    /**
-     * Checks whether metadata exists for a given problem ID.
-     *
-     * @param id the problem ID
-     * @return true if metadata is available; false otherwise
-     */
-    static boolean isAvailable(int id) {
-        return cache.containsKey(id);
     }
 
     /**
@@ -129,21 +115,39 @@ public final class ProblemMetadataLoader {
     private static Map<Integer, Metadata> loadMetadata() {
         try (InputStream is = ProblemMetadataLoader.class.getClassLoader().getResourceAsStream(METADATA_FILE)) {
             if (is == null) {
-                throw new IllegalStateException("❌ Metadata file not found: " + METADATA_FILE);
+                throw new IllegalStateException(ERROR_PREFIX + "Metadata file not found: " + METADATA_FILE);
             }
 
             return new Gson().fromJson(
                     new InputStreamReader(is),
-                    new TypeToken<ConcurrentHashMap<Integer, Metadata>>() {}.getType()
+                    new TypeToken<ConcurrentHashMap<Integer, Metadata>>() {
+                    }.getType()
             );
         } catch (Exception e) {
-            System.err.println("❌ Failed to load metadata: " + e.getMessage());
-            return Map.of(); // Return empty immutable map
+            System.err.println(ERROR_PREFIX + "Failed to load metadata: " + e.getMessage());
+            return Map.of(); // Return an empty immutable map
         }
     }
 
     /**
-     * Internal class representing the structure of a single problem’s metadata.
+     * Common method to retrieve a specific field from metadata.
+     *
+     * @param id             the problem ID
+     * @param fieldExtractor function to extract the desired field from metadata
+     * @param defaultValue   value to return if metadata is not found
+     * @param <T>            the type of the field
+     * @return the field value or default value if not found
+     */
+    private static <T> T getMetadataField(int id, Function<Metadata, T> fieldExtractor, T defaultValue) {
+        Metadata metadata = cache.get(id);
+        if (metadata != null) {
+            return fieldExtractor.apply(metadata);
+        }
+        return defaultValue;
+    }
+
+    /**
+     * Internal class representing the structure of a single problem's metadata.
      * Matches JSON structure: { "title": ..., "descriptionFile": ..., "testcaseFile": ... }
      */
     private static class Metadata {
