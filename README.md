@@ -1,110 +1,74 @@
 # 🧠 LeetCode Java Solutions
 
-A structured, extensible Java framework for solving and testing LeetCode problems with rich metadata, test automation, and interactive input.
+A comprehensive Java framework for solving LeetCode problems. This project uses a modular approach to organize solutions, handle test automation, and manage interactive inputs.
 
 ---
 
-## 📌 Project Highlights
+## 📌 Key Features
 
-- 📂 Modular architecture with each problem as a self-contained class
-- 🧪 Built-in support for **visible** and **hidden** test cases (JSON-driven)
-- ⚙️ Dynamic metadata parsing (title, description, problem ID, test files)
-- 🧵 Interactive mode for user-driven inputs and custom test evaluation
-- 🔧 Designed to scale across hundreds of problems cleanly
-
----
-
-## 🛠️ Tech Stack
-
-- **Java 24**
-- **Maven**
-- **Gson 2.11.0** – for JSON serialization/deserialization
-- **JetBrains Annotations** – static analysis support
+- 🏗️ **Scalable Design**: Each problem is encapsulated in a self-contained Java class.
+- 🧪 **Test Cases**: JSON-driven test cases for structured problem evaluation.
+- 📜 **Metadata Parsing**: Dynamically loads problem descriptions, IDs, and related metadata.
+- 🔄 **Interactive Support**: Supports user-driven custom inputs for testing solutions.
 
 ---
 
-## 🧱 Project Structure
+## 🛠️ Technology Stack
 
-```
-LeetCode/
-├── src/main/java/org/leetcode/
-│   ├── LC268.java           # Problem-specific implementation
-│   ├── Problem.java         # Core problem interface
-│   ├── MetadataSupport.java # Metadata and description access
-│   ├── ProblemMetadataLoader.java
-│   ├── TestCaseSupport.java
-│   ├── Main.java            # Launch entry point
-├── src/main/resources/
-│   ├── descriptions/        # Problem descriptions
-│   ├── testcases/           # JSON-formatted test cases
-│   ├── availableProblems.json
-```
-
-> 💡 **Note:** All problem files are prefixed with `LC<id>.java`, and metadata is stored under `resources/`.
+- **Java 24**: Main programming language used in the project.
+- **Maven**: Build and dependency management tool.
+- **Gson 2.11.0**: Handles JSON serialization/deserialization.
+- **JetBrains Annotations**: Provides static analysis support.
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### ✅ Prerequisites
+
+Ensure you have the following tools installed:
 
 - Java 24+
 - Maven 3+
 
-### 🔨 Build the Project
+### 🔨 Building the Project
 
+Run the following command to build the project:
 ```bash
 mvn clean install
 ```
-
 ---
 
-## ⚙️ Running a Problem
+## ⚡ How to Run
 
-Solutions support two modes:
+You can execute solutions for LeetCode problems in two modes:
 
-| Mode               | Command                       | Behavior                                |
-| ------------------ | ----------------------------- | --------------------------------------- |
-| 🧪 Test Case Mode   | `Main.java` (uses LC268 etc.) | Loads and evaluates all JSON test cases |
-| ✍️ Interactive Mode | via `processUserInput()`      | Accepts custom input from user          |
+1. **Test Case Mode**: Evaluates test cases defined in JSON files.
+2. **Interactive Mode**: Allows manual inputs for testing.
 
----
-
-## 📚 Implemented Problems
-
-| ID                                                   | Title                          | Time   | Space  |
-|------------------------------------------------------|--------------------------------|--------|--------|
-| [268](https://leetcode.com/problems/missing-number/) | Missing Number                 | `O(n)` | `O(1)` |
-| 7                                                    | Reverse Integer                | –      | –      |
-| 1688                                                 | Count of Matches in Tournament | –      | –      |
-| 2016                                                 | Maximum Difference Between...  | –      | –      |
-| 3409                                                 | Longest Subsequence...         | –      | –      |
-
-> ✅ `LC268` is fully implemented and serves as the reference structure.
+To run the project, execute `Main.java` and follow on-screen instructions.
 
 ---
 
 ## 🤝 Contributing
 
-Want to add your own solution?
+We welcome your contributions to make this framework more robust and feature-rich!
 
-1. Fork the repository
-2. Create a new class `LC<id>.java` implementing `Problem<I, O>`
-3. Add JSON test cases in `resources/testcases/`
-4. Submit a Pull Request!
+1. Fork this repository.
+2. Implement a new problem as `LC<id>.java` in the `solutions/` package.
+3. Add test cases in JSON format in the `resources/testcases/` directory.
+4. Create a pull request with a brief description.
 
 ---
 
 ## ⚖️ License
 
-This project is licensed under the **MIT License**.
+This project is licensed under the **MIT License**. Feel free to use and modify it.
 
 ---
 
 ## 📬 Contact
 
-For issues, ideas, or contributions, feel free to open an [Issue](https://github.com/your-username/LeetCode/issues).
+For questions, suggestions, or issues, feel free to open a [GitHub Issue](https://github.com/your-username/LeetCode/issues). We'd love to hear from you!
 
----
-
-> Built with ❤️ for structured problem solving and clean architecture.
+> Built with ❤️ for clean code, scalability, and efficient problem-solving.
