@@ -10,14 +10,7 @@ import java.util.stream.Collectors;
  * <p>
  * This interface assumes that the implementing class name follows the format {@code LC<id>} (e.g., {@code LC7}, {@code LC268}).
  */
-public interface MetadataSupport {
-
-    String UNKNOWN_ID = "Unknown";
-    String UNKNOWN_TITLE = "Unknown Problem Title";
-    String ERROR_PREFIX = "❌ ";
-    String CLASS_NAME_PATTERN = "LC\\d+";
-    String DESCRIPTIONS_PATH = "descriptions/";
-    String PROBLEM_URL_FORMAT = "https://leetcode.com/problems/%s/description/";
+interface MetadataSupport {
 
     /**
      * Retrieves the LeetCode problem ID based on the implementing class name.
@@ -26,7 +19,7 @@ public interface MetadataSupport {
      */
     default String getId() {
         int id = extractIdFromClassName();
-        return id == -1 ? UNKNOWN_ID : String.valueOf(id);
+        return id == -1 ? "Unknown" : String.valueOf(id);
     }
 
     /**
@@ -39,7 +32,7 @@ public interface MetadataSupport {
             int id = Integer.parseInt(getId());
             return ProblemMetadataLoader.getTitle(id);
         } catch (NumberFormatException e) {
-            return UNKNOWN_TITLE;
+            return "Unknown Problem Title";
         }
     }
 
@@ -50,10 +43,10 @@ public interface MetadataSupport {
      */
     default String getLink() {
         String title = getTitle();
-        if (title == null || title.equals(UNKNOWN_TITLE)) {
-            return ERROR_PREFIX + "Problem not found.";
+        if (title == null || title.equals("Unknown Problem Title")) {
+            return "❌ Problem not found.";
         }
-        return String.format(PROBLEM_URL_FORMAT, slugifyTitle(title));
+        return String.format("https://leetcode.com/problems/%s/description/", slugifyTitle(title));
     }
 
     /**
@@ -65,16 +58,28 @@ public interface MetadataSupport {
         try {
             int id = Integer.parseInt(getId());
             String fileName = ProblemMetadataLoader.getDescriptionPath(id);
-            if (fileName == null) return ERROR_PREFIX + "Description file not specified for ID " + id;
-            try (InputStream is = getClass().getClassLoader().getResourceAsStream(DESCRIPTIONS_PATH + fileName)) {
-                if (is == null) return ERROR_PREFIX + "Description file not found: " + fileName;
+            if (fileName == null) return "❌ Description file not specified for ID " + id;
+            try (InputStream is = getClass().getClassLoader().getResourceAsStream("descriptions/" + fileName)) {
+                if (is == null) return "❌ Description file not found: " + fileName;
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
                     return reader.lines().collect(Collectors.joining("\n"));
                 }
             }
         } catch (Exception e) {
-            return ERROR_PREFIX + "Failed to load description: " + e.getMessage();
+            return "❌ Failed to load description: " + e.getMessage();
         }
+    }
+
+    /// Prints metadata info.
+    default void printMetadata() {
+        System.out.printf(
+                "%s %s%n%s %s%n%s %s%n%s%n%s %s%n",
+                "Problem ID: ", getId(),
+                "Title: ", getTitle(),
+                "Link: ", getLink(),
+                "---------------------------------",
+                "Description:%n ", getDescription()
+        );
     }
 
     /**
@@ -98,7 +103,7 @@ public interface MetadataSupport {
      */
     private int extractIdFromClassName() {
         String className = getClass().getSimpleName();
-        if (className.matches(CLASS_NAME_PATTERN)) {
+        if (className.matches("LC\\d+")) {
             try {
                 return Integer.parseInt(className.substring(2));
             } catch (NumberFormatException e) {

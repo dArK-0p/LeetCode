@@ -1,24 +1,15 @@
 package org.leetcode.core;
 
+import java.util.HashMap;
+import java.util.InputMismatchException;
 import java.util.Scanner;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
-/**
- * Interface for handling interactive user input for a LeetCode problem.
- */
-@SuppressWarnings("unused")
-public interface UserInputSupport {
+/// Interface for handling interactive user input for a LeetCode problem.
+interface UserInputSupport {
 
-    /**
-     * Constants for common prompts and messages
-     */
-    String DEFAULT_INPUT_PROMPT = "🔹 Enter your input:";
-    String INPUT_ARROW = "↪️  Input: ";
-    String OUTPUT_SUCCESS = "✅ Output: ";
-    String OUTPUT_ERROR = "❌ Invalid input. Please try again.";
-    String CONTINUE_PROMPT = "🔄 Would you like to try another input? (y/n): ";
-    String GOODBYE_MESSAGE = "👋 Thank you for using the problem solver!";
+    /// Constants
+    int MAX_TEST_CASES = 10;
+    int MAX_INVALID_ATTEMPTS = 3;
 
     /**
      * Accepts input from the user via the console, parses it into the appropriate type,
@@ -26,144 +17,109 @@ public interface UserInputSupport {
      * <p>
      * Implementations are encouraged to handle invalid input and parsing errors gracefully.
      */
-    void processUserInput();
+    void runUserTestCases();
 
     /**
-     * Processes user input with custom prompts and validation.
-     * This default implementation provides a framework for input handling.
+     * Validates the raw user-provided input and expected output.
+     * Implementations should define custom rules to ensure the input
+     * matches the expected problem format (e.g., valid integers, arrays, strings).
      *
-     * @param scanner   the Scanner to read input from
-     * @param prompt    the prompt message to display to the user
-     * @param parser    function to parse the input string into the desired type
-     * @param validator predicate to validate the parsed input
-     * @param solver    function to solve the problem with the parsed input
-     * @param <T>       the input type for the solver
-     * @param <R>       the output type from the solver
-     * @return the result of the solver, or null if input was invalid
+     * @param userInput an array where index 0 is the input, and index 1 is the expected output
+     * @return {@code true} if the input is valid; {@code false} otherwise
      */
-    default <T, R> R processInputWithValidation(
-            Scanner scanner,
-            String prompt,
-            Function<String, T> parser,
-            Predicate<T> validator,
-            Function<T, R> solver) {
-
-        System.out.println(prompt);
-        System.out.print(INPUT_ARROW);
-
-        String userInput = scanner.nextLine().trim();
-
-        try {
-            T parsedInput = parser.apply(userInput);
-
-            if (validator.test(parsedInput)) {
-                R result = solver.apply(parsedInput);
-                System.out.println(OUTPUT_SUCCESS + result);
-                return result;
-            } else {
-                System.out.println(OUTPUT_ERROR + " Input validation failed.");
-                return null;
-            }
-        } catch (Exception e) {
-            System.out.println(OUTPUT_ERROR + " " + e.getMessage());
-            return null;
-        }
-    }
+    boolean validateUserInput(String[] userInput);
 
     /**
-     * Runs an interactive session that allows multiple inputs until the user chooses to quit.
-     * This method calls processUserInput() repeatedly based on user choice.
+     * Formats and normalizes the raw user-provided input-output pair to conform to JSON formatting.
+     * <p>
+     * This method ensures that both the input and expected output strings are valid JSON representations,
+     * allowing them to be safely deserialized using a JSON parser like Gson or Jackson.
+     * Implementations can apply trimming, quoting, array/object wrapping, or escaping as needed.
+     *
+     * @param userInput a raw input-output pair entered by the user; index 0 is input, index 1 is expected output
+     * @return a normalized {@code String[]} where both entries are guaranteed to be valid JSON strings
      */
-    default void runInteractiveSession() {
+    String[] formatUserInput(String[] userInput);
+
+    /**
+     * Reads and collects multiple user test cases from the console.
+     * Prompts for the number of test cases, then repeatedly fetches input and expected output pairs.
+     *
+     * @return a map where keys are raw input strings and values are expected output strings
+     */
+    default void getUserInput() {
         try (Scanner scanner = new Scanner(System.in)) {
-            boolean continueSession = true;
+            int testCaseLimit = promptTestCaseLimit(scanner);
 
-            while (continueSession) {
-                processUserInput();
+            TestCases.user = new HashMap<>(testCaseLimit);
+            System.out.printf("%n%s%n", "🔹 Enter your test cases:");
 
-                System.out.print(CONTINUE_PROMPT);
-                String response = scanner.nextLine().trim().toLowerCase();
+            collectTestCases(scanner, testCaseLimit);
 
-                continueSession = response.equals("y") || response.equals("yes");
+            System.out.println("📊 Total No. of Test Cases = " + TestCases.user.size());
+        } catch (InputMismatchException e) {
+            System.out.println("❌ Please enter a valid number for the test case count.");
+        } catch (Exception e) {
+            System.out.println("❌ Unexpected error during user input: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Prompts the user to enter the number of test cases and validates the input.
+     *
+     * @param scanner the Scanner instance to read user input.
+     * @return the number of test cases to process.
+     */
+    private int promptTestCaseLimit(Scanner scanner) {
+        System.out.print("Enter no. of test cases: [1 - " + MAX_TEST_CASES + "] ");
+        int testCaseLimit = scanner.nextInt();
+        scanner.nextLine(); // Consume leftover newline
+
+        if (testCaseLimit > MAX_TEST_CASES) {
+            System.err.println("Input exceeds " + MAX_TEST_CASES + ". Defaulting to " + MAX_TEST_CASES + " test cases.");
+            testCaseLimit = MAX_TEST_CASES;
+        }
+
+        return testCaseLimit;
+    }
+
+    /**
+     * Collects user test cases by validating and formatting inputs.
+     *
+     * @param scanner       the Scanner instance to read inputs.
+     * @param testCaseLimit the maximum number of test cases to process.
+     */
+    private void collectTestCases(Scanner scanner, int testCaseLimit) {
+        int invalidInputCount = 0;
+
+        while (TestCases.user.size() < testCaseLimit && invalidInputCount < MAX_INVALID_ATTEMPTS) {
+            System.out.printf("Test Case #%d:%n", TestCases.user.size() + 1);
+            String[] userInput = fetchUserInput(scanner);
+
+            if (!validateUserInput(userInput)) {
+                System.out.println("❌ Invalid input. Please try again.");
+                invalidInputCount++;
+                continue;
             }
 
-            System.out.println(GOODBYE_MESSAGE);
+            String[] formattedInput = formatUserInput(userInput);
+            TestCases.user.put(formattedInput[0], formattedInput[1]);
         }
     }
 
     /**
-     * Utility method to safely parse an integer from user input.
+     * Reads a single test case from the user, consisting of an input and an expected output.
+     * Uses the provided scanner to fetch console input.
      *
-     * @param input the input string to parse
-     * @return the parsed integer
-     * @throws NumberFormatException if the input is not a valid integer
+     * @param scanner the Scanner instance to read from
+     * @return a String array of size 2: index 0 contains the input, index 1 contains the expected output
      */
-    default int parseInteger(String input) {
-        if (input == null || input.trim().isEmpty()) {
-            throw new NumberFormatException("Input cannot be null or empty");
-        }
-        return Integer.parseInt(input.trim());
-    }
-
-    /**
-     * Utility method to safely parse along from user input.
-     *
-     * @param input the input string to parse
-     * @return the parsed long
-     * @throws NumberFormatException if the input is not a valid long
-     */
-    default long parseLong(String input) {
-        if (input == null || input.trim().isEmpty()) {
-            throw new NumberFormatException("Input cannot be null or empty");
-        }
-        return Long.parseLong(input.trim());
-    }
-
-    /**
-     * Utility method to safely parse a double from user input.
-     *
-     * @param input the input string to parse
-     * @return the parsed double
-     * @throws NumberFormatException if the input is not a valid double
-     */
-    default double parseDouble(String input) {
-        if (input == null || input.trim().isEmpty()) {
-            throw new NumberFormatException("Input cannot be null or empty");
-        }
-        return Double.parseDouble(input.trim());
-    }
-
-    /**
-     * Utility method to parse an array of integers from comma-separated input.
-     *
-     * @param input the comma-separated string of integers
-     * @return an array of parsed integers
-     * @throws NumberFormatException if any element is not a valid integer
-     */
-    default int[] parseIntegerArray(String input) {
-        if (input == null || input.trim().isEmpty()) {
-            return new int[0];
-        }
-
-        String[] parts = input.trim().split(" ");
-        int[] result = new int[parts.length];
-
-        for (int i = 0; i < parts.length; i++) {
-            result[i] = Integer.parseInt(parts[i].trim());
-        }
-
-        return result;
-    }
-
-    /**
-     * Displays helpful information about the expected input format.
-     * Implementations can override this to provide problem-specific guidance.
-     */
-    default void displayInputHelp() {
-        System.out.println("ℹ️  Input Help:");
-        System.out.println("   • Enter your input when prompted");
-        System.out.println("   • For arrays, use space-separated values (e.g., 1 2 3 4)");
-        System.out.println("   • For strings, enter the text directly");
-        System.out.println("   • For numbers, enter the numeric value");
+    private String[] fetchUserInput(Scanner scanner) {
+        String[] userInput = new String[2];
+        System.out.println("↪️  Input: ");
+        userInput[0] = scanner.nextLine().trim();
+        System.out.println("↪️  Expected Output: ");
+        userInput[1] = scanner.nextLine().trim();
+        return userInput;
     }
 }

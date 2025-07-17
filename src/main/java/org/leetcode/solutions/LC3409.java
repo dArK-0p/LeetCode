@@ -1,24 +1,15 @@
 package org.leetcode.solutions;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.leetcode.core.Problem;
-import org.leetcode.core.TestCases;
+import org.jetbrains.annotations.NotNull;
+import org.leetcode.core.LC;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
-@SuppressWarnings({"InstantiationOfUtilityClass", "unused"})
-public class LC3409 implements Problem<int[], Integer> {
-
-    static {
-        new TestCases(new LC3409());
-    }
-
-    private static final Gson gson = new Gson();
+@SuppressWarnings("unused")
+public class LC3409 extends LC<int[], List<Integer>, Integer> {
 
     /**
      * Finds the length of the longest decreasing subsequence.
@@ -28,7 +19,7 @@ public class LC3409 implements Problem<int[], Integer> {
      * @return the length of the longest decreasing subsequence
      */
     @Override
-    public Integer solve(int[] nums) {
+    public Integer solve(int @NotNull [] nums) {
         Map<Integer, Integer> dp = new HashMap<>();
         int maxLen = 0;
 
@@ -42,124 +33,93 @@ public class LC3409 implements Problem<int[], Integer> {
     }
 
     /**
-     * Processes user input with enhanced error handling and validation.
+     * Validates the user-provided input and expected output pair.
+     * <p>
+     * This implementation checks if the input contains only digits and whitespace
+     * (suitable for space-separated integers), and that the expected output is a single digit or integer.
+     * <p>
+     * Override this method to enforce problem-specific input validation rules.
+     *
+     * @param userInput an array where index 0 is the raw input, and index 1 is the expected output
+     * @return {@code true} if both input and output match the expected format; {@code false} otherwise
      */
+
     @Override
-    public void processUserInput() {
-        try (Scanner scanner = new Scanner(System.in)) {
-            displayInputHelp();
-
-            System.out.println("🔹 Enter space-separated integers for longest decreasing subsequence:");
-            System.out.print(INPUT_ARROW);
-
-            String input = scanner.nextLine().trim();
-
-            try {
-                int[] nums = parseIntegerArray(input);
-
-                if (nums.length == 0) {
-                    System.out.println(OUTPUT_ERROR + " Array cannot be empty.");
-                    return;
-                }
-
-                if (nums.length > 1000) {
-                    System.out.println(OUTPUT_ERROR + " Array size should not exceed 1000 for optimal performance.");
-                    return;
-                }
-
-                int result = solve(nums);
-                System.out.println(OUTPUT_SUCCESS + result);
-
-            } catch (NumberFormatException e) {
-                System.out.println(OUTPUT_ERROR + " " + e.getMessage());
-            }
-        }
+    public boolean validateUserInput(String @NotNull [] userInput) {
+        return userInput[0].matches("^[\\d\\s]+$") && userInput[1].matches("^\\d+$");
     }
 
     /**
-     * Executes all predefined test cases with enhanced statistics.
+     * Converts raw user input and expected output into valid JSON strings.
+     * <p>
+     * This implementation transforms space-separated values into JSON arrays,
+     * enabling safe deserialization using libraries like Gson or Jackson.
+     * Override for problem-specific formatting (e.g., nested arrays or objects).
+     *
+     * @param userInput a two-element array: index 0 is the input, index 1 is the expected output
+     * @return a normalized {@code String[]} with both entries in valid JSON format
      */
+
     @Override
-    public void runTestCases() {
-        System.out.println("📘 Running test cases for: LC" + getId());
-
-        if (hasAnyTestCases()) {
-            System.out.println(EMPTY_TEST_CASES_MESSAGE);
-            return;
-        }
-
-        Map<List<Integer>, Integer> allTestCases = new LinkedHashMap<>();
-        allTestCases.putAll(fetchTestCases(TestCases.visible));
-        allTestCases.putAll(fetchTestCases(TestCases.hidden));
-
-        for (Map.Entry<List<Integer>, Integer> entry : allTestCases.entrySet()) {
-            int[] input = toIntArray(entry.getKey());
-            int expected = entry.getValue();
-            int actual = solve(input);
-            System.out.printf("Input: %-25s | Expected: %-3d | Got: %-3d | %s%n",
-                    formatArrayForDisplay(entry.getKey()), expected, actual,
-                    (expected == actual) ? "✅" : "❌");
-        }
-
-        printTestCaseStatistics();
+    public String[] formatUserInput(String @NotNull [] userInput) {
+        userInput[0] = GSON.toJson(userInput[0].split("\\s"));
+        return userInput;
     }
 
     /**
-     * Converts raw test case strings into typed test data.
+     * Parses a raw JSON string representing a list of integers.
+     * <p>
+     * Example input: {@code "[1, 2, 3, 4]"}
+     *
+     * @param rawInput the JSON-formatted string to parse
+     * @return a {@link List} of {@link Integer} values extracted from the input
+     * @throws com.google.gson.JsonSyntaxException if the input is not a valid JSON
      */
     @Override
-    public Map<List<Integer>, Integer> fetchTestCases(Map<String, String> testCases) {
-        Map<List<Integer>, Integer> result = new LinkedHashMap<>();
-        for (Map.Entry<String, String> entry : testCases.entrySet()) {
-            try {
-                List<Integer> input = parseInput(entry.getKey());
-                Integer output = parseInteger(entry.getValue());
-                result.put(input, output);
-            } catch (Exception e) {
-                System.err.printf("⚠️  Skipping invalid test case: '%s' → '%s'%n",
-                        entry.getKey(), entry.getValue());
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Parses a JSON-formatted string into a list of integers.
-     */
-    private List<Integer> parseInput(String rawInput) {
-        return gson.fromJson(rawInput, new TypeToken<List<Integer>>() {
+    public List<Integer> parseInput(String rawInput) {
+        return GSON.fromJson(rawInput, new TypeToken<List<Integer>>() {
         }.getType());
     }
 
     /**
-     * Converts List<Integer> to int[].
-     */
-    private int[] toIntArray(List<Integer> list) {
-        return list.stream().mapToInt(Integer::intValue).toArray();
-    }
-
-    /**
-     * Formats array for display, truncating if too long.
-     */
-    private String formatArrayForDisplay(List<Integer> list) {
-        if (list.size() <= 8) {
-            return list.toString();
-        }
-        return list.subList(0, 5) + "..." + list.subList(list.size() - 2, list.size());
-    }
-
-    /**
-     * Displays problem-specific input help.
+     * Parses the raw expected output string into an {@link Integer}.
+     * <p>
+     * Example input: {@code "42"}
+     *
+     * @param rawInput the string representing the expected output
+     * @return the parsed {@link Integer} value
+     * @throws NumberFormatException if the input is not a valid integer
      */
     @Override
-    public void displayInputHelp() {
-        System.out.println("ℹ️  Longest Decreasing Subsequence Help:");
-        System.out.println("   • Enter space-separated integers (e.g., 5 3 8 2 1 4)");
-        System.out.println("   • Array can contain 1 to 1000 elements");
-        System.out.println("   • Finds longest subsequence where each element is smaller than previous");
-        System.out.println("   • Subsequence doesn't need to be contiguous");
-        System.out.println("   • Example: [5,3,8,2,1,4] → 4 (subsequence: 8→5→3→2 or 8→5→3→1)");
-        System.out.println("   • Example: [1,2,3,4] → 1 (no decreasing subsequence longer than 1)");
-        System.out.println("   • Example: [4,3,2,1] → 4 (entire array is decreasing)");
+    public Integer parseExpectedOutput(String rawInput) {
+        return Integer.valueOf(rawInput);
+    }
+
+    /**
+     * Compares the expected and actual {@link Integer} values based on content.
+     * This method ignores reference equality and performs a value-only comparison.
+     *
+     * @param expected the expected output value (maybe {@code null})
+     * @param actual   the actual computed result (maybe {@code null})
+     * @return {@code true} if both values are non-null and numerically equal; {@code false} otherwise
+     */
+    @Override
+    public boolean compare(Integer expected, Integer actual) {
+        return expected != null && expected.equals(actual);
+    }
+
+    /**
+     * Converts a {@link List} of {@link Integer} objects into a primitive {@code int[]} array.
+     * <p>
+     * This method uses Java Streams to perform the conversion efficiently and concisely.
+     * It assumes that the input list is non-null and contains only non-null elements.
+     *
+     * @param key the list of integers to convert
+     * @return a primitive {@code int[]} array containing the same values as the input list
+     * @throws NullPointerException if the input list is {@code null} or contains {@code null} elements
+     */
+    @Override
+    public int[] convert(List<Integer> key) {
+        return key.stream().mapToInt(Integer::intValue).toArray();
     }
 }

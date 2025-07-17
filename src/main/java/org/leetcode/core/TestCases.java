@@ -1,34 +1,26 @@
 package org.leetcode.core;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Map;
 
 /**
- * Utility class responsible for holding and loading test cases (visible and hidden)
- * for a specific LeetCode problem. This class must be initialized per problem instance.
+ * Utility class for loading and storing visible, hidden, and user-defined test cases
+ * for a specific LeetCode problem. Automatically initialized by the {@link LC} superclass.
  *
- * <p>Usage: Create an instance in a static block to populate the static fields:
+ * <p>Test cases are accessible via the static maps:
  * <pre>
- * static {
- *     new TestCases(new LC7()); // Load visible and hidden test cases
- * }
- * </pre>
- *
- * <p>Then access the test cases via the public static fields:
- * <pre>
- * Map&lt;String, String&gt; visibleTests = TestCases.visible;
- * Map&lt;String, String&gt; hiddenTests = TestCases.hidden;
+ * TestCases.visible   // predefined examples
+ * TestCases.hidden    // internal validation cases
+ * TestCases.user      // user-provided input/output
  * </pre>
  */
-public final class TestCases {
+final class TestCases {
 
-    private static final String ERROR_PREFIX = "❌ ";
-    private static final String INVALID_ID_FORMAT_MESSAGE = "Invalid problem ID format: ";
-
-    /**
-     * Public static maps storing visible and hidden test cases.
-     */
+    /// Public static maps storing visible, hidden, and user-defined test cases.
     public static Map<String, String> visible;
     public static Map<String, String> hidden;
+    public static Map<String, String> user;
 
     /**
      * Initializes the static test case maps using metadata associated with the given problem.
@@ -37,7 +29,7 @@ public final class TestCases {
      * @param caller the problem instance whose test cases are to be loaded
      * @throws IllegalArgumentException if the caller is null or has an invalid ID format
      */
-    public TestCases(Problem<?, ?> caller) {
+    public TestCases(Problem<?, ?, ?> caller) {
         if (caller == null) {
             throw new IllegalArgumentException("Problem caller cannot be null");
         }
@@ -54,11 +46,11 @@ public final class TestCases {
      * @return the parsed problem ID
      * @throws IllegalArgumentException if the ID format is invalid
      */
-    private static int parseProblemId(Problem<?, ?> caller) {
+    private static int parseProblemId(@NotNull Problem<?, ?, ?> caller) {
         try {
             return Integer.parseInt(caller.getId());
         } catch (NumberFormatException e) {
-            String errorMessage = ERROR_PREFIX + INVALID_ID_FORMAT_MESSAGE + caller.getId();
+            String errorMessage = "❌ Invalid problem ID format: " + caller.getId();
             System.err.println(errorMessage);
             throw new IllegalArgumentException(errorMessage, e);
         }
@@ -68,16 +60,14 @@ public final class TestCases {
      * Loads either visible or hidden test cases from the JSON metadata file.
      *
      * @param problemId the numeric problem ID
-     * @param visible   whether to load visible test cases ({@code true}) or hidden ones ({@code false})
+     * @param testCase  whether to load visible test cases ({@code true}) or hidden ones ({@code false})
      * @return a map of string-formatted input-output pairs
      */
-    private static Map<String, String> loadTestCases(int problemId, boolean visible) {
+    private static Map<String, String> loadTestCases(int problemId, boolean testCase) {
         try {
-            return ProblemMetadataLoader.getTestCases(problemId, visible);
+            return ProblemMetadataLoader.getTestCases(problemId, testCase);
         } catch (Exception e) {
-            System.err.println(ERROR_PREFIX + "Failed to load " +
-                    (visible ? "visible" : "hidden") +
-                    " test cases for problem ID " + problemId + ": " + e.getMessage());
+            System.err.println("❌ Failed to load " + (testCase ? "visible" : "hidden") + " test cases for problem ID " + problemId + ": " + e.getMessage());
             return Map.of(); // empty immutable map
         }
     }

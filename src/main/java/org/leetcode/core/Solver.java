@@ -6,8 +6,7 @@ package org.leetcode.core;
  * @param <I> the input type
  * @param <O> the output type
  */
-@FunctionalInterface
-public interface Solver<I, O> {
+interface Solver<I, O> {
 
     /**
      * Computes and returns the solution for the given input.
