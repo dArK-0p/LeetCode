@@ -1,50 +1,18 @@
 package org.leetcode.solutions;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.leetcode.core.Problem;
-import org.leetcode.core.TestCases;
+import org.jetbrains.annotations.NotNull;
+import org.leetcode.core.LC;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
 
-@SuppressWarnings({"InstantiationOfUtilityClass", "unused"})
-public class LC268 implements Problem<int[], Integer> {
-    static {
-        new TestCases(new LC268());
-    } // Initialize Test Cases
+@SuppressWarnings("unused")
+public class LC268 extends LC<int[], List<Integer>, Integer> {
 
-    private static final Gson gson = new Gson();
+    public void interactWithProblem() {
+        printDetails();
 
-    /**
-     * Fetches test cases by converting serialized string representations
-     * of inputs and outputs into their appropriate types.
-     *
-     * @param testCases a map where each key is a serialized input and the value is the expected output
-     * @return a map containing deserialized test cases as input-output pairs
-     */
-    @Override
-    public Map<List<Integer>, Integer> fetchTestCases(Map<String, String> testCases) {
-        Map<List<Integer>, Integer> result = new LinkedHashMap<>();
-        for (Map.Entry<String, String> entry : testCases.entrySet()) {
-            List<Integer> input = parseInput(entry.getKey());
-            Integer output = Integer.parseInt(entry.getValue());
-            result.put(input, output);
-        }
-        return result;
-    }
 
-    /**
-     * Parses a JSON-formatted string into a list of integers.
-     *
-     * @param rawInput the JSON string representing the input array
-     * @return a list of integers representing the deserialized input
-     */
-    private List<Integer> parseInput(String rawInput) {
-        return gson.fromJson(rawInput, new TypeToken<List<Integer>>() {
-        }.getType());
     }
 
     /**
@@ -54,7 +22,7 @@ public class LC268 implements Problem<int[], Integer> {
      * @return the missing number
      */
     @Override
-    public Integer solve(int[] nums) {
+    public Integer solve(int @NotNull [] nums) {
         int actualSum = 0;
         int expectedSum = (nums.length * (nums.length + 1)) / 2;
         for (int num : nums) actualSum += num;
@@ -62,121 +30,93 @@ public class LC268 implements Problem<int[], Integer> {
     }
 
     /**
-     * Combines visible and hidden test cases and validates against all.
-     * Enhanced with statistics reporting.
-     */
-    @Override
-    public void runTestCases() {
-        System.out.println("📘 Running test cases for: LC" + getId());
-
-        // Check if test cases are available
-        if (hasAnyTestCases()) {
-            System.out.println(EMPTY_TEST_CASES_MESSAGE);
-            return;
-        }
-
-        Map<List<Integer>, Integer> allTestCases = new LinkedHashMap<>();
-        allTestCases.putAll(fetchTestCases(TestCases.visible));
-        allTestCases.putAll(fetchTestCases(TestCases.hidden));
-
-        for (Map.Entry<List<Integer>, Integer> entry : allTestCases.entrySet()) {
-            int[] input = toIntArray(entry.getKey());
-            int expected = entry.getValue();
-            int actual = solve(input);
-            System.out.printf("Input: %-20s | Expected: %-5d | Got: %-5d | %s%n",
-                    entry.getKey(), expected, actual, (expected == actual) ? "✅" : "❌");
-        }
-
-        // Print statistics
-        printTestCaseStatistics();
-    }
-
-    /**
-     * Processes user input with enhanced error handling and help information.
-     * Uses the new interface utility methods for better consistency.
-     */
-    @Override
-    public void processUserInput() {
-        try (Scanner scanner = new Scanner(System.in)) {
-            displayInputHelp();
-
-            System.out.println("🔹 Enter space-separated numbers for the missing number problem (e.g., 3 0 1):");
-            System.out.print(INPUT_ARROW);
-
-            String input = scanner.nextLine().trim();
-
-            try {
-                int[] nums = parseIntegerArray(input);
-
-                if (nums.length == 0) {
-                    System.out.println(OUTPUT_ERROR + " Array cannot be empty for this problem.");
-                    return;
-                }
-
-                // Validate input for the missing number problem
-                if (!isValidMissingNumberInput(nums)) {
-                    System.out.println(OUTPUT_ERROR + " Invalid input: array should contain distinct numbers in range [0, n].");
-                    return;
-                }
-
-                int result = solve(nums);
-                System.out.println(OUTPUT_SUCCESS + result);
-
-            } catch (NumberFormatException e) {
-                System.out.println(OUTPUT_ERROR + " " + e.getMessage());
-            }
-        }
-    }
-
-    /**
-     * Validates input for the missing number problem.
-     * The array should contain distinct numbers from [0, n] with exactly one missing.
+     * Validates the user-provided input and expected output pair.
+     * <p>
+     * This implementation checks if the input contains only digits and whitespace
+     * (suitable for space-separated integers), and that the expected output is a single digit or integer.
+     * <p>
+     * Override this method to enforce problem-specific input validation rules.
      *
-     * @param nums the input array
-     * @return true if the input is valid for the missing number problem
+     * @param userInput an array where index 0 is the raw input, and index 1 is the expected output
+     * @return {@code true} if both input and output match the expected format; {@code false} otherwise
      */
-    private boolean isValidMissingNumberInput(int[] nums) {
-        if (nums == null || nums.length == 0) {
-            return false;
-        }
 
-        // Check if all numbers are in valid range [0, n]
-        int n = nums.length;
-        for (int num : nums) {
-            if (num < 0 || num > n) {
-                return false;
-            }
-        }
-
-        // Check for duplicates (simple approach)
-        boolean[] seen = new boolean[n + 1];
-        for (int num : nums) {
-            if (seen[num]) {
-                return false; // Duplicate found
-            }
-            seen[num] = true;
-        }
-
-        return true;
+    @Override
+    public boolean validateUserInput(String @NotNull [] userInput) {
+        return userInput[0].matches("^[\\d\\s]+$") && userInput[1].matches("^\\d+$");
     }
 
     /**
-     * Displays problem-specific input help.
+     * Converts raw user input and expected output into valid JSON strings.
+     * <p>
+     * This implementation transforms space-separated values into JSON arrays,
+     * enabling safe deserialization using libraries like Gson or Jackson.
+     * Override for problem-specific formatting (e.g., nested arrays or objects).
+     *
+     * @param userInput a two-element array: index 0 is the input, index 1 is the expected output
+     * @return a normalized {@code String[]} with both entries in valid JSON format
+     */
+
+    @Override
+    public String[] formatUserInput(String @NotNull [] userInput) {
+        userInput[0] = GSON.toJson(userInput[0].split("\\s"));
+        return userInput;
+    }
+
+    /**
+     * Parses a raw JSON string representing a list of integers.
+     * <p>
+     * Example input: {@code "[1, 2, 3, 4]"}
+     *
+     * @param rawInput the JSON-formatted string to parse
+     * @return a {@link List} of {@link Integer} values extracted from the input
+     * @throws com.google.gson.JsonSyntaxException if the input is not a valid JSON
      */
     @Override
-    public void displayInputHelp() {
-        System.out.println("ℹ️  Missing Number Problem Help:");
-        System.out.println("   • Enter space-separated numbers (e.g., 3 0 1)");
-        System.out.println("   • Numbers should be distinct and in range [0, n]");
-        System.out.println("   • Array should have exactly one missing number");
-        System.out.println("   • Example: '3 0 1' has missing number 2");
-        System.out.println("   • Example: '1 2' has missing number 0");
+    public List<Integer> parseInput(String rawInput) {
+        return GSON.fromJson(rawInput, new TypeToken<List<Integer>>() {
+        }.getType());
     }
 
     /**
-     * Converts List[Integer] to int[].
+     * Parses the raw expected output string into an {@link Integer}.
+     * <p>
+     * Example input: {@code "42"}
+     *
+     * @param rawInput the string representing the expected output
+     * @return the parsed {@link Integer} value
+     * @throws NumberFormatException if the input is not a valid integer
      */
-    private int[] toIntArray(List<Integer> list) {
-        return list.stream().mapToInt(Integer::intValue).toArray();
+    @Override
+    public Integer parseExpectedOutput(String rawInput) {
+        return Integer.valueOf(rawInput);
+    }
+
+    /**
+     * Compares the expected and actual {@link Integer} values based on content.
+     * This method ignores reference equality and performs a value-only comparison.
+     *
+     * @param expected the expected output value (maybe {@code null})
+     * @param actual   the actual computed result (maybe {@code null})
+     * @return {@code true} if both values are non-null and numerically equal; {@code false} otherwise
+     */
+    @Override
+    public boolean compare(Integer expected, Integer actual) {
+        return expected != null && expected.equals(actual);
+    }
+
+    /**
+     * Converts a {@link List} of {@link Integer} objects into a primitive {@code int[]} array.
+     * <p>
+     * This method uses Java Streams to perform the conversion efficiently and concisely.
+     * It assumes that the input list is non-null and contains only non-null elements.
+     *
+     * @param key the list of integers to convert
+     * @return a primitive {@code int[]} array containing the same values as the input list
+     * @throws NullPointerException if the input list is {@code null} or contains {@code null} elements
+     */
+    @Override
+    public int[] convert(@NotNull List<Integer> key) {
+        return key.stream().mapToInt(Integer::intValue).toArray();
     }
 }

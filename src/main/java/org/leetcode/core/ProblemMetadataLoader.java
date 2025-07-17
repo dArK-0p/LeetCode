@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -17,16 +18,12 @@ import java.util.function.Function;
  * Loads and provides access to metadata for LeetCode problems.
  * Metadata is loaded from: resources/availableProblems.json
  */
-public final class ProblemMetadataLoader {
+final class ProblemMetadataLoader {
 
-    /**
-     * Name of the metadata file in the resources' directory.
-     */
+    /// Name of the metadata file in the resources' directory.
     private static final String METADATA_FILE = "availableProblems.json";
 
-    private static final String UNKNOWN_PROBLEM_TITLE = "Unknown Problem Title";
-    private static final String TESTCASES_PATH = "testcases/";
-    private static final String ERROR_PREFIX = "❌ ";
+    /// JSON field names and sections used for loading structured test cases
     private static final String VISIBLE_SECTION = "visible";
     private static final String HIDDEN_SECTION = "hidden";
     private static final String INPUT_FIELD = "input";
@@ -38,9 +35,7 @@ public final class ProblemMetadataLoader {
      */
     private static final Map<Integer, Metadata> cache = loadMetadata();
 
-    /**
-     * Private constructor to prevent instantiation of this utility class.
-     */
+    /// Private constructor to prevent instantiation of this utility class.
     private ProblemMetadataLoader() {
         // Utility class – no object creation allowed
     }
@@ -51,8 +46,10 @@ public final class ProblemMetadataLoader {
      * @param id the numeric LeetCode problem ID
      * @return the title string if found; otherwise a placeholder
      */
-    static String getTitle(int id) {
-        return getMetadataField(id, metadata -> metadata.title, UNKNOWN_PROBLEM_TITLE);
+    static String getTitle(int id) { return
+            getMetadataField(id, metadata ->
+                    metadata.title, "Unknown Problem Title"
+            );
     }
 
     /**
@@ -71,28 +68,30 @@ public final class ProblemMetadataLoader {
      * @param id the numeric LeetCode problem ID
      * @return the filename string (e.g., "TC268.json") or null if not found
      */
-    static String getTestcasePath(int id) {
-        return getMetadataField(id, metadata -> metadata.testcaseFile, null);
+    static String getTestcasePath(int id) { return
+            getMetadataField(id, metadata ->
+                            metadata.testcaseFile, null
+            );
     }
 
     /**
      * Loads test cases for a given problem ID from the associated JSON file.
      *
-     * @param id      the problem ID whose test cases to load
-     * @param visible if {@code true}, loads from the "visible" section;
-     *                if {@code false}, loads from the "hidden" section
+     * @param id       the problem ID whose test cases to load
+     * @param testCase if {@code true}, loads from the "visible" section;
+     *                 if {@code false}, loads from the "hidden" section
      * @return a map where each entry represents one test case: input → expected output
      */
-    public static Map<String, String> getTestCases(int id, boolean visible) {
+    static @NotNull Map<String, String> getTestCases(int id, boolean testCase) {
         String filename = getTestcasePath(id);
         if (filename == null) return Map.of();
 
-        String path = TESTCASES_PATH + filename;
+        String path = "testcases/" + filename;
         try (InputStream is = ProblemMetadataLoader.class.getClassLoader().getResourceAsStream(path)) {
-            if (is == null) throw new IllegalStateException(ERROR_PREFIX + "Testcase file not found: " + path);
+            if (is == null) throw new IllegalStateException("❌ Testcase file not found: " + path);
 
             JsonObject root = JsonParser.parseReader(new InputStreamReader(is)).getAsJsonObject();
-            JsonArray array = root.getAsJsonArray(visible ? VISIBLE_SECTION : HIDDEN_SECTION);
+            JsonArray array = root.getAsJsonArray(testCase ? VISIBLE_SECTION : HIDDEN_SECTION);
 
             Map<String, String> result = new LinkedHashMap<>();
             for (int i = 0; i < array.size(); i++) {
@@ -102,7 +101,7 @@ public final class ProblemMetadataLoader {
 
             return result;
         } catch (Exception e) {
-            System.err.println(ERROR_PREFIX + "Failed to load test cases: " + e.getMessage());
+            System.err.println("❌ Failed to load test cases: " + e.getMessage());
             return Map.of();
         }
     }
@@ -115,16 +114,13 @@ public final class ProblemMetadataLoader {
     private static Map<Integer, Metadata> loadMetadata() {
         try (InputStream is = ProblemMetadataLoader.class.getClassLoader().getResourceAsStream(METADATA_FILE)) {
             if (is == null) {
-                throw new IllegalStateException(ERROR_PREFIX + "Metadata file not found: " + METADATA_FILE);
+                throw new IllegalStateException("❌ Metadata file not found: " + METADATA_FILE);
             }
 
-            return new Gson().fromJson(
-                    new InputStreamReader(is),
-                    new TypeToken<ConcurrentHashMap<Integer, Metadata>>() {
-                    }.getType()
-            );
+            return new Gson().fromJson(new InputStreamReader(is), new TypeToken<ConcurrentHashMap<Integer, Metadata>>() {
+            }.getType());
         } catch (Exception e) {
-            System.err.println(ERROR_PREFIX + "Failed to load metadata: " + e.getMessage());
+            System.err.println("❌ Failed to load metadata: " + e.getMessage());
             return Map.of(); // Return an empty immutable map
         }
     }
