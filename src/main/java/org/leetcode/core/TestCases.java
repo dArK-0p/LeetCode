@@ -15,7 +15,7 @@ import java.util.Map;
  * TestCases.user      // user-provided input/output
  * </pre>
  */
-final class TestCases {
+public final class TestCases {
 
     /// Public static maps storing visible, hidden, and user-defined test cases.
     public static Map<String, String> visible;
@@ -29,7 +29,7 @@ final class TestCases {
      * @param caller the problem instance whose test cases are to be loaded
      * @throws IllegalArgumentException if the caller is null or has an invalid ID format
      */
-    public TestCases(Problem<?, ?, ?> caller) {
+    public TestCases(LC<?, ?, ?> caller) {
         if (caller == null) {
             throw new IllegalArgumentException("Problem caller cannot be null");
         }
@@ -46,7 +46,7 @@ final class TestCases {
      * @return the parsed problem ID
      * @throws IllegalArgumentException if the ID format is invalid
      */
-    private static int parseProblemId(@NotNull Problem<?, ?, ?> caller) {
+    private static int parseProblemId(@NotNull LC<?, ?, ?> caller) {
         try {
             return Integer.parseInt(caller.getId());
         } catch (NumberFormatException e) {

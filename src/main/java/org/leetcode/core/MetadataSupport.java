@@ -19,6 +19,7 @@ interface MetadataSupport {
      */
     default String getId() {
         int id = extractIdFromClassName();
+
         return id == -1 ? "Unknown" : String.valueOf(id);
     }
 
@@ -30,7 +31,11 @@ interface MetadataSupport {
     default String getTitle() {
         try {
             int id = Integer.parseInt(getId());
-            return ProblemMetadataLoader.getTitle(id);
+            return ProblemMetadataLoader.getMetadataField(
+                    id,
+                    Metadata::title,
+                    "Unknown Problem Title"
+            );
         } catch (NumberFormatException e) {
             return "Unknown Problem Title";
         }
@@ -43,6 +48,7 @@ interface MetadataSupport {
      */
     default String getLink() {
         String title = getTitle();
+
         if (title == null || title.equals("Unknown Problem Title")) {
             return "❌ Problem not found.";
         }
@@ -57,11 +63,21 @@ interface MetadataSupport {
     default String getDescription() {
         try {
             int id = Integer.parseInt(getId());
-            String fileName = ProblemMetadataLoader.getDescriptionPath(id);
+            String fileName = ProblemMetadataLoader.getMetadataField(
+                    id,
+                    Metadata::descriptionFile,
+                    null
+            );
+
             if (fileName == null) return "❌ Description file not specified for ID " + id;
-            try (InputStream is = getClass().getClassLoader().getResourceAsStream("descriptions/" + fileName)) {
+
+            try ( InputStream is = getClass()
+                    .getClassLoader()
+                    .getResourceAsStream("descriptions/" + fileName) ) {
+
                 if (is == null) return "❌ Description file not found: " + fileName;
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+
+                try ( BufferedReader reader = new BufferedReader(new InputStreamReader(is)) ) {
                     return reader.lines().collect(Collectors.joining("\n"));
                 }
             }
@@ -73,12 +89,12 @@ interface MetadataSupport {
     /// Prints metadata info.
     default void printMetadata() {
         System.out.printf(
-                "%s %s%n%s %s%n%s %s%n%s%n%s %s%n",
+                "%n%s %s%n%s %s%n%s %s%n%s%n%s%n %s%n",
                 "Problem ID: ", getId(),
                 "Title: ", getTitle(),
                 "Link: ", getLink(),
                 "---------------------------------",
-                "Description:%n ", getDescription()
+                "Description:", getDescription()
         );
     }
 
@@ -90,9 +106,10 @@ interface MetadataSupport {
      * @return a slugified version of the title
      */
     private String slugifyTitle(String title) {
-        return title.toLowerCase()
-                .replaceAll("[^a-z0-9\\s-]", "")   // remove special characters
-                .replaceAll("\\s+", "-");          // replace whitespace with hyphens
+        return title
+                .toLowerCase()
+                .replaceAll("[^a-z0-9\\s-]", "")
+                .replaceAll("\\s+", "-");
     }
 
     /**
@@ -103,6 +120,7 @@ interface MetadataSupport {
      */
     private int extractIdFromClassName() {
         String className = getClass().getSimpleName();
+
         if (className.matches("LC\\d+")) {
             try {
                 return Integer.parseInt(className.substring(2));
@@ -110,6 +128,7 @@ interface MetadataSupport {
                 System.err.println("⚠️ Error parsing ID from class name: " + className);
             }
         }
+
         return -1;
     }
 }

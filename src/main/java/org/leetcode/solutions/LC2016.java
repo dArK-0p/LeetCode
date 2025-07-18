@@ -10,6 +10,31 @@ import java.util.List;
 public class LC2016 extends LC<int[], List<Integer>, Integer> {
 
     /**
+     * Singleton instance of {@code LC2016}, automatically managed for centralized access.
+     * <p>
+     * This pattern ensures that each LeetCode problem class has exactly one active instance,
+     * which is reused across the CLI, test runner, and other components.
+     */
+    private static final LC2016 INSTANCE = new LC2016();
+
+    /**
+     * Returns the singleton instance of this LeetCode problem class.
+     *
+     * @return the unique {@code LC2016} instance
+     */
+    public static LC2016 getInstance() {
+        return INSTANCE;
+    }
+
+    /**
+     * Private constructor to enforce singleton instantiation via {@link #getInstance()}.
+     * Initializes any metadata or test cases as needed by the {@code LC} framework.
+     */
+    private LC2016() {
+        // Initialize any custom state here if needed
+    }
+
+    /**
      * Finds the maximum difference between two elements such that the larger element
      * appears after the smaller element in the array.
      *

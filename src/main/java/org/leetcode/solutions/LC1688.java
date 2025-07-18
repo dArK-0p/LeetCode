@@ -8,6 +8,31 @@ import org.leetcode.core.LC;
 public class LC1688 extends LC<Integer, Integer, Integer> {
 
     /**
+     * Singleton instance of {@code LC1688}, automatically managed for centralized access.
+     * <p>
+     * This pattern ensures that each LeetCode problem class has exactly one active instance,
+     * which is reused across the CLI, test runner, and other components.
+     */
+    private static final LC1688 INSTANCE = new LC1688();
+
+    /**
+     * Returns the singleton instance of this LeetCode problem class.
+     *
+     * @return the unique {@code LC1688} instance
+     */
+    public static LC1688 getInstance() {
+        return INSTANCE;
+    }
+
+    /**
+     * Private constructor to enforce singleton instantiation via {@link #getInstance()}.
+     * Initializes any metadata or test cases as needed by the {@code LC} framework.
+     */
+    private LC1688() {
+        // Initialize any custom state here if needed
+    }
+
+    /**
      * Calculates the number of matches in a tournament.
      * In a tournament with n teams, there are exactly n-1 matches needed
      * to determine the winner (each match eliminates exactly one team).
@@ -73,7 +98,6 @@ public class LC1688 extends LC<Integer, Integer, Integer> {
      * @param actual   the actual output value from {@code solve}
      * @return {@code true} if both values are equal, {@code false} otherwise
      */
-
     @Override
     public boolean compare(Integer expected, Integer actual) {
         return expected != null && expected.equals(actual);
@@ -86,7 +110,7 @@ public class LC1688 extends LC<Integer, Integer, Integer> {
      * This problem requires both the input and output to be valid integers,
      * represented as digit-only strings.
      *
-     * @param userInput a string array where index 0 is input and index 1 is expected output
+     * @param userInput a string array where index 0 is input and index 1 is the expected output
      * @return {@code true} if both values are digit-only strings, {@code false} otherwise
      */
     @Override

@@ -1,5 +1,7 @@
 package org.leetcode.core;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -10,6 +12,7 @@ interface UserInputSupport {
     /// Constants
     int MAX_TEST_CASES = 10;
     int MAX_INVALID_ATTEMPTS = 3;
+    Scanner SCANNER = new Scanner(System.in);
 
     /**
      * Accepts input from the user via the console, parses it into the appropriate type,
@@ -44,19 +47,15 @@ interface UserInputSupport {
     /**
      * Reads and collects multiple user test cases from the console.
      * Prompts for the number of test cases, then repeatedly fetches input and expected output pairs.
-     *
-     * @return a map where keys are raw input strings and values are expected output strings
      */
     default void getUserInput() {
-        try (Scanner scanner = new Scanner(System.in)) {
-            int testCaseLimit = promptTestCaseLimit(scanner);
+        try {
+            int testCaseLimit = promptTestCaseLimit();
 
             TestCases.user = new HashMap<>(testCaseLimit);
             System.out.printf("%n%s%n", "🔹 Enter your test cases:");
 
-            collectTestCases(scanner, testCaseLimit);
-
-            System.out.println("📊 Total No. of Test Cases = " + TestCases.user.size());
+            collectTestCases(testCaseLimit);
         } catch (InputMismatchException e) {
             System.out.println("❌ Please enter a valid number for the test case count.");
         } catch (Exception e) {
@@ -66,14 +65,11 @@ interface UserInputSupport {
 
     /**
      * Prompts the user to enter the number of test cases and validates the input.
-     *
-     * @param scanner the Scanner instance to read user input.
      * @return the number of test cases to process.
      */
-    private int promptTestCaseLimit(Scanner scanner) {
+    private int promptTestCaseLimit() {
         System.out.print("Enter no. of test cases: [1 - " + MAX_TEST_CASES + "] ");
-        int testCaseLimit = scanner.nextInt();
-        scanner.nextLine(); // Consume leftover newline
+        int testCaseLimit = SCANNER.nextInt(); SCANNER.nextLine();
 
         if (testCaseLimit > MAX_TEST_CASES) {
             System.err.println("Input exceeds " + MAX_TEST_CASES + ". Defaulting to " + MAX_TEST_CASES + " test cases.");
@@ -86,15 +82,14 @@ interface UserInputSupport {
     /**
      * Collects user test cases by validating and formatting inputs.
      *
-     * @param scanner       the Scanner instance to read inputs.
      * @param testCaseLimit the maximum number of test cases to process.
      */
-    private void collectTestCases(Scanner scanner, int testCaseLimit) {
+    private void collectTestCases(int testCaseLimit) {
         int invalidInputCount = 0;
 
         while (TestCases.user.size() < testCaseLimit && invalidInputCount < MAX_INVALID_ATTEMPTS) {
             System.out.printf("Test Case #%d:%n", TestCases.user.size() + 1);
-            String[] userInput = fetchUserInput(scanner);
+            String[] userInput = fetchUserInput();
 
             if (!validateUserInput(userInput)) {
                 System.out.println("❌ Invalid input. Please try again.");
@@ -111,15 +106,17 @@ interface UserInputSupport {
      * Reads a single test case from the user, consisting of an input and an expected output.
      * Uses the provided scanner to fetch console input.
      *
-     * @param scanner the Scanner instance to read from
      * @return a String array of size 2: index 0 contains the input, index 1 contains the expected output
      */
-    private String[] fetchUserInput(Scanner scanner) {
+    private String @NotNull [] fetchUserInput() {
         String[] userInput = new String[2];
+
         System.out.println("↪️  Input: ");
-        userInput[0] = scanner.nextLine().trim();
+        userInput[0] = SCANNER.nextLine().trim();
+
         System.out.println("↪️  Expected Output: ");
-        userInput[1] = scanner.nextLine().trim();
+        userInput[1] = SCANNER.nextLine().trim();
+
         return userInput;
     }
 }

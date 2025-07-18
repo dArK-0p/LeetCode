@@ -12,6 +12,31 @@ import java.util.Map;
 public class LC3409 extends LC<int[], List<Integer>, Integer> {
 
     /**
+     * Singleton instance of {@code LC3409}, automatically managed for centralized access.
+     * <p>
+     * This pattern ensures that each LeetCode problem class has exactly one active instance,
+     * which is reused across the CLI, test runner, and other components.
+     */
+    private static final LC3409 INSTANCE = new LC3409();
+
+    /**
+     * Returns the singleton instance of this LeetCode problem class.
+     *
+     * @return the unique {@code LC3409} instance
+     */
+    public static LC3409 getInstance() {
+        return INSTANCE;
+    }
+
+    /**
+     * Private constructor to enforce singleton instantiation via {@link #getInstance()}.
+     * Initializes any metadata or test cases as needed by the {@code LC} framework.
+     */
+    private LC3409() {
+        // Initialize any custom state here if needed
+    }
+
+    /**
      * Finds the length of the longest decreasing subsequence.
      * Uses dynamic programming to track the longest subsequence ending at each value.
      *

@@ -9,11 +9,31 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class LC268 extends LC<int[], List<Integer>, Integer> {
 
-    public void interactWithProblem() {
-        printDetails();
+    /**
+     * Singleton instance of {@code LC268}, automatically managed for centralized access.
+     * <p>
+     * This pattern ensures that each LeetCode problem class has exactly one active instance,
+     * which is reused across the CLI, test runner, and other components.
+     */
+    private static final LC268 INSTANCE = new LC268();
 
-
+    /**
+     * Returns the singleton instance of this LeetCode problem class.
+     *
+     * @return the unique {@code LC268} instance
+     */
+    public static LC268 getInstance() {
+        return INSTANCE;
     }
+
+    /**
+     * Private constructor to enforce singleton instantiation via {@link #getInstance()}.
+     * Initializes any metadata or test cases as needed by the {@code LC} framework.
+     */
+    private LC268() {
+        // Initialize any custom state here if needed
+    }
+
 
     /**
      * Solves the Missing Number problem using arithmetic sum formula.

@@ -9,10 +9,6 @@ import java.util.Map;
  */
 interface TestCaseSupport<I, O> {
 
-    /// Constants
-    boolean VISIBLE_TEST_CASES = true;
-    boolean HIDDEN_TEST_CASES = false;
-
     /// Executes all predefined test cases (both visible and hidden) for the current problem.
     void runTestCases();
 
@@ -60,7 +56,14 @@ interface TestCaseSupport<I, O> {
      */
     default Map<I, O> fetchTestCases(Map<String, String> testCases) {
         Map<I, O> result = new LinkedHashMap<>();
-        testCases.forEach((key, value) -> result.put(parseInput(key), parseExpectedOutput(value)));
+
+        testCases.forEach(
+                (key, value) -> result.put(
+                        parseInput(key),
+                        parseExpectedOutput(value)
+                )
+        );
+
         return result;
     }
 
@@ -74,76 +77,52 @@ interface TestCaseSupport<I, O> {
      * @return a {@link Map} of input-output pairs in typed form, or an empty map if no test cases are available
      */
     default Map<I, O> getAllTestCases() {
-        if (!hasAnyTestCases()) {
+        if (TestCases.visible.isEmpty() && TestCases.hidden.isEmpty()) {
             System.out.println("No test cases available.");
-            return Map.of(); // Immutable empty map
+            return Map.of();
         }
+        else if (TestCases.visible.isEmpty()) return fetchTestCases(TestCases.hidden);
+        else if (TestCases.hidden.isEmpty()) return fetchTestCases(TestCases.visible);
+
 
         Map<I, O> allTestCases = new LinkedHashMap<>();
         allTestCases.putAll(fetchTestCases(TestCases.visible));
         allTestCases.putAll(fetchTestCases(TestCases.hidden));
+
         return allTestCases;
     }
 
     /**
-     * Prints all test cases from the specified group (visible/hidden).
+     * Prints a {@code Set} of test cases.
      *
-     * @param isVisible {@code true} for visible test cases; {@code false} for hidden ones
+     * @param testCases a map containing raw input → expected output pairs
      */
-    default void printTestCases(boolean isVisible) {
-        Map<String, String> testCases = isVisible ? TestCases.visible : TestCases.hidden;
-        String label = isVisible ? "Visible Test Cases:" : "Hidden Test Cases:";
-
-        System.out.println(label);
-        System.out.println("=================================");
-
-        if (!hasTestCases(isVisible)) {
+    default void printTestCases(Map<String, String> testCases, String label) {
+        if (testCases == null || testCases.isEmpty()) {
             System.out.println("No test cases available.");
             return;
         }
 
-        testCases.forEach((key, value) -> System.out.printf(" - %s → %s%n", key, value));
-        System.out.println(); // Add spacing between groups
-    }
+        printTestCaseLabel(label);
 
-    /// Prints statistics about the available test cases.
-    default void printTestCaseStatistics() {
-        int visibleCount = getTestCaseCount(VISIBLE_TEST_CASES);
-        int hiddenCount = getTestCaseCount(HIDDEN_TEST_CASES);
-        int totalCount = visibleCount + hiddenCount;
-
-        System.out.printf("📊 Statistics: %d visible, %d hidden, %d total test cases%n", visibleCount, hiddenCount, totalCount);
+        testCases.forEach((input, output) ->
+                System.out.printf(" - %s → %s%n", input, output)
+        );
     }
 
     /**
-     * Gets the count of test cases for the specified type.
+     * Prints a formatted section header for a group of test cases.
+     * <p>
+     * This method provides visual separation and context in the CLI
+     * when printing different categories of test cases (e.g., Visible, Hidden, User).
      *
-     * @param isVisible {@code true} for visible test cases; {@code false} for hidden ones
-     * @return the number of test cases, or 0 if none available
+     * @param label the category label to display above the test case block (e.g., "Visible", "Hidden")
      */
-    default int getTestCaseCount(boolean isVisible) {
-        Map<String, String> testCases = isVisible ? TestCases.visible : TestCases.hidden;
-        return (testCases != null) ? testCases.size() : 0;
+    private void printTestCaseLabel(String label) {
+        System.out.printf(
+                "%n%s Test Cases:%n%s%n",
+                label,
+                "============================="
+        );
     }
-
-    /**
-     * Checks if test cases are available for the specified type.
-     *
-     * @param isVisible {@code true} for visible test cases; {@code false} for hidden ones
-     * @return {@code true} if test cases are available and not empty; {@code false} otherwise
-     */
-    default boolean hasTestCases(boolean isVisible) {
-        return getTestCaseCount(isVisible) > 0; // Leverages `getTestCaseCount` for consistency
-    }
-
-    /**
-     * Checks if any test cases are available (either visible or hidden).
-     *
-     * @return {@code true} if any test cases are available; {@code false} otherwise
-     */
-    default boolean hasAnyTestCases() {
-        return hasTestCases(VISIBLE_TEST_CASES) || hasTestCases(HIDDEN_TEST_CASES); // Reuses `hasTestCases`
-    }
-
-
 }

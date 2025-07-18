@@ -2,11 +2,12 @@ package org.leetcode.core;
 
 import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 /**
  * Abstract base class for all LeetCode problems.
@@ -26,6 +27,32 @@ import java.util.Scanner;
 public abstract class LC<I, T, O> implements Problem<I, T, O> {
 
     /**
+     * Returns a singleton instance of the LeetCode problem class matching the given problem ID.
+     * <p>
+     * This method uses reflection to find the class (e.g., LC268 for id "268") and returns
+     * its singleton instance via a `getInstance()` method defined in each subclass.
+     * <p>
+     * The class must follow the naming pattern {@code LC<ID>} and implement a public static
+     * method {@code getInstance()} returning an instance of the class.
+     *
+     * @param id the LeetCode problem ID as a string (e.g., "268")
+     * @return a singleton instance of the requested problem, or {@code null} if not found or instantiation fails
+     */
+    public static @Nullable LC<?, ?, ?> getInstance(String id) {
+        String className = "org.leetcode.solutions.LC" + id;
+
+        try {
+            Class<?> clazz = Class.forName(className);
+            Method method = clazz.getMethod("getInstance");
+
+            return (LC<?, ?, ?>) method.invoke(null);
+        } catch (Exception e) {
+            System.err.printf("❌ Unable to load problem LC%s: %s%n", id, e.getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Constructs a new problem instance and loads its associated test cases
      * based on metadata resolved from the class name (e.g., {@code LC268}).
      */
@@ -35,9 +62,8 @@ public abstract class LC<I, T, O> implements Problem<I, T, O> {
 
     /// Constants
     protected static final Gson GSON = new Gson();
-    protected static final Scanner SCANNER = new Scanner(System.in);
 
-    private static final String RUNNING_TEST_CASES_LABEL = "%n📘 Running %s-defined test cases for: LC%s";
+    private static final String RUNNING_TEST_CASES_LABEL = "%n📘 Running %s-defined test cases for: LC%s%n";
     private final List<TestCaseResult<T, O>> evaluatedTestCases = new ArrayList<>();
 
     /**
@@ -50,6 +76,7 @@ public abstract class LC<I, T, O> implements Problem<I, T, O> {
     private void evaluate(@NotNull T rawInput, @NotNull O expected) {
         O actual = solve(convert(rawInput));
         boolean isCorrect = compare(expected, actual);
+
         evaluatedTestCases.add(new TestCaseResult<>(rawInput, expected, actual, isCorrect));
     }
 
@@ -74,14 +101,16 @@ public abstract class LC<I, T, O> implements Problem<I, T, O> {
         int total = TestCaseResult.getTotalCount();
         int failed = TestCaseResult.getFailedCount();
 
+        System.out.println("\n📊 Total No. of Test Cases = " + total);
         if (total > 0 && failed == 0) {
             System.out.println("✅ All test cases passed!");
         } else {
             System.out.printf("❌ %d of %d test cases failed:%n%n", failed, total);
-            evaluatedTestCases.forEach(System.out::println);
+            evaluatedTestCases.forEach(result -> {
+                if (result.isCorrect()) System.out.println(result);
+            });
         }
     }
-
 
     /**
      * Executes all available test cases (visible and hidden) for the current problem instance.
@@ -103,17 +132,15 @@ public abstract class LC<I, T, O> implements Problem<I, T, O> {
 
         getUserInput();
         run(fetchTestCases(TestCases.user));
-
-        System.out.println("👋 Thank you for using the problem solver!");
     }
 
     public void printDetails() {
         printMetadata();
-        printTestCases(VISIBLE_TEST_CASES);
+        printTestCases(TestCases.visible, "Visible");
 
-        System.out.println("Print Hidden Test Cases? (y/N): ");
+        System.out.print("Print Hidden Test Cases? (y/N): ");
         if (SCANNER.next().charAt(0) == 'y')
-            printTestCases(HIDDEN_TEST_CASES);
+            printTestCases(TestCases.hidden, "Hidden");
     }
 
     /**

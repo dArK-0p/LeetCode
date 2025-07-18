@@ -8,6 +8,31 @@ import org.leetcode.core.LC;
 public class LC7 extends LC<Integer, Integer, Integer> {
 
     /**
+     * Singleton instance of {@code LC7}, automatically managed for centralized access.
+     * <p>
+     * This pattern ensures that each LeetCode problem class has exactly one active instance,
+     * which is reused across the CLI, test runner, and other components.
+     */
+    private static final LC7 INSTANCE = new LC7();
+
+    /**
+     * Returns the singleton instance of this LeetCode problem class.
+     *
+     * @return the unique {@code LC7} instance
+     */
+    public static LC7 getInstance() {
+        return INSTANCE;
+    }
+
+    /**
+     * Private constructor to enforce singleton instantiation via {@link #getInstance()}.
+     * Initializes any metadata or test cases as needed by the {@code LC} framework.
+     */
+    private LC7() {
+        // Initialize any custom state here if needed
+    }
+
+    /**
      * Reverses the digits of a given integer.
      * <p>
      * If the reversed integer exceeds the bounds of a 32-bit signed integer,
@@ -95,7 +120,7 @@ public class LC7 extends LC<Integer, Integer, Integer> {
      * This problem requires both the input and output to be valid integers,
      * represented as digit-only strings.
      *
-     * @param userInput a string array where index 0 is input and index 1 is expected output
+     * @param userInput a string array where index 0 is input and index 1 is the expected output
      * @return {@code true} if both values are digit-only strings, {@code false} otherwise
      */
     @Override
